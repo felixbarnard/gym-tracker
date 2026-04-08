@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,8 +79,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hist-item:last-child{border-bottom:none;}
 .hist-date{font-size:14px;color:#ffffff;}
 .hist-type{font-size:13px;font-weight:600;padding:3px 10px;border-radius:20px;}
-.hist-type.upper{color:var(--purple);background:rgba(83,74,183,0.1);}
-.hist-type.lower{color:var(--green);background:rgba(29,158,117,0.1);}
+.hist-type.upper{color:#ffffff;background:rgba(83,74,183,0.5);}
+.hist-type.lower{color:#ffffff;background:rgba(29,158,117,0.5);}
 
 .sec-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin:20px 0 8px;}
 .muted{color:var(--text2);font-size:13px;}
@@ -230,33 +231,20 @@ function renderGym(){
     const last=getLastSession(ex);
     const todayTop=getTopSetThisSession(ex);
 
-    let prBadge='';
-    if(last&&todayTop){
-      const beatKg=parseFloat(todayTop.kg)>parseFloat(last.top.kg);
-      const beatReps=parseFloat(todayTop.kg)===parseFloat(last.top.kg)&&parseInt(todayTop.reps)>parseInt(last.top.reps);
-      if(beatKg||beatReps)prBadge=`<span class="pr-badge">PR</span>`;
-    }
-
-    let lastLine='no previous data';
-    if(last){
-      const setsStr=last.sets.map(s=>`${s.kg}×${s.reps}`).join('  ');
-      lastLine=`<strong>${last.date.slice(5)}</strong> &nbsp;${setsStr}`;
-    }
-
     const lastSets=last?last.sets:[];
     const setsHtml=gymSets[ex].map((s,i)=>{
       const prevKg=lastSets[i]?String(lastSets[i].kg):'';
       const prevReps=lastSets[i]?String(lastSets[i].reps):'';
       return`<div class="set-grid">
-        <input class="set-input" type="number" inputmode="decimal" placeholder="${prevKg||'—'}" value="${s.kg}" oninput="gymSets['${ex}'][${i}].kg=this.value;renderGym()"/>
-        <input class="set-input" type="number" inputmode="numeric" placeholder="${prevReps||'—'}" value="${s.reps}" oninput="gymSets['${ex}'][${i}].reps=this.value;renderGym()"/>
+        <input class="set-input" type="number" inputmode="decimal" placeholder="${prevKg||'—'}" value="${s.kg}" onchange="gymSets['${ex}'][${i}].kg=this.value;" onblur="gymSets['${ex}'][${i}].kg=this.value;updatePR('${ex}')"/>
+        <input class="set-input" type="number" inputmode="numeric" placeholder="${prevReps||'—'}" value="${s.reps}" onchange="gymSets['${ex}'][${i}].reps=this.value;" onblur="gymSets['${ex}'][${i}].reps=this.value;updatePR('${ex}')"/>
         <button class="ghost-btn" onclick="removeSet('${ex}',${i})">✕</button>
       </div>`;
     }).join('');
 
     return`<div class="exercise-row">
       <div class="ex-header">
-        <span class="ex-name">${ex}${prBadge}</span>
+        <span class="ex-name">${ex}<span class="pr-badge" data-pr="${ex}" style="display:none">PR</span></span>
         <button class="ghost-btn" onclick="removeExercise('${ex}')">remove</button>
       </div>
       <div class="col-labels"><span class="col-lbl">kg</span><span class="col-lbl">reps</span><span></span></div>
@@ -264,6 +252,18 @@ function renderGym(){
       <button class="ghost-btn" onclick="addSet('${ex}')">+ set</button>
     </div>`;
   }).join('');
+}
+
+function updatePR(ex){
+  const last=getLastSession(ex);
+  const todayTop=getTopSetThisSession(ex);
+  const badge=document.querySelector(`[data-pr="${ex}"]`);
+  if(!badge)return;
+  if(last&&todayTop){
+    const beatKg=parseFloat(todayTop.kg)>parseFloat(last.top.kg);
+    const beatReps=parseFloat(todayTop.kg)===parseFloat(last.top.kg)&&parseInt(todayTop.reps)>parseInt(last.top.reps);
+    badge.style.display=(beatKg||beatReps)?'inline':'none';
+  }
 }
 
 function addSet(ex){gymSets[ex].push({kg:'',reps:''});renderGym();}
@@ -294,7 +294,13 @@ async function logSession(){
     const sets=(gymSets[ex]||[]).filter(s=>s.kg&&s.reps);
     if(sets.length)session.exercises[ex]=sets.map(s=>({kg:parseFloat(s.kg),reps:parseInt(s.reps)}));
   });
-  if(!Object.keys(session.exercises).length){alert('add some sets first');return;}
+  if(!Object.keys(session.exercises).length){
+    const btn=document.getElementById('log-btn');
+    btn.textContent='add some sets first';
+    btn.style.background='#E24B4A';
+    setTimeout(()=>{btn.textContent='log session';btn.style.background='var(--text)';},2000);
+    return;
+  }
   setSync('syncing');
   const res=await sb('gym_sessions',{method:'POST',body:JSON.stringify(session)});
   if(res!==null){
