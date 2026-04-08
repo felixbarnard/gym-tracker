@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Gym"/>
+<title>Gym</title>
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f5f5f4;--bg3:#eeede8;
+  --text:#1a1a1a;--text2:#6b6b68;--text3:#9b9b98;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
+  --green:#1D9E75;--purple:#534AB7;
+  --r:12px;--rs:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+    --text:#f2f2f7;--text2:#aeaeb2;--text3:#6e6e73;
+    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;}
+.app{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top,16px) 16px env(safe-area-inset-bottom,40px);}
+
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px;}
+.header-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
+.sync-row{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#EF9F27;flex-shrink:0;}
+
+.picker{background:var(--bg);border-radius:var(--r);padding:20px;margin-bottom:16px;border:0.5px solid var(--border);text-align:center;}
+.picker-label{font-size:13px;color:var(--text2);margin-bottom:16px;}
+.picker-btns{display:flex;gap:10px;justify-content:center;}
+.picker-btn{flex:1;max-width:140px;padding:14px 0;border:1.5px solid var(--border2);border-radius:var(--rs);background:transparent;font-size:16px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.picker-btn:active{transform:scale(0.97);}
+.picker-btn.upper:active{background:rgba(83,74,183,0.1);border-color:var(--purple);color:var(--purple);}
+.picker-btn.lower:active{background:rgba(29,158,117,0.1);border-color:var(--green);color:var(--green);}
+
+.session-banner{border-radius:var(--r);padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.session-banner.upper{background:rgba(83,74,183,0.1);border:0.5px solid rgba(83,74,183,0.25);}
+.session-banner.lower{background:rgba(29,158,117,0.08);border:0.5px solid rgba(29,158,117,0.2);}
+.sb-type{font-size:15px;font-weight:700;}
+.sb-change{font-size:12px;color:var(--text2);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;}
+
+.card{background:var(--bg);border-radius:var(--r);padding:16px;margin-bottom:12px;border:0.5px solid var(--border);}
+
+.exercise-row{padding:14px 0;border-bottom:0.5px solid var(--border);}
+.exercise-row:last-child{border-bottom:none;padding-bottom:0;}
+.ex-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.ex-name{font-size:15px;font-weight:600;letter-spacing:-0.2px;}
+.ex-last{font-size:12px;color:var(--text3);margin-bottom:10px;}
+.ex-last strong{color:var(--text2);font-weight:600;}
+.pr-badge{font-size:11px;font-weight:700;color:var(--green);background:rgba(29,158,117,0.12);padding:2px 7px;border-radius:20px;margin-left:6px;}
+
+.col-labels{display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;margin-bottom:4px;}
+.col-lbl{font-size:11px;color:var(--text3);text-align:center;text-transform:uppercase;letter-spacing:0.04em;}
+.set-grid{display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:5px;}
+.set-input{padding:8px 4px;font-size:15px;text-align:center;width:100%;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-family:inherit;-moz-appearance:textfield;outline:none;transition:border-color 0.15s;}
+.set-input:focus{border-color:var(--green);}
+.set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.ghost-btn{font-size:13px;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px;font-family:inherit;}
+.ghost-btn:active{opacity:0.5;}
+
+.add-ex-row{display:flex;gap:8px;margin-top:4px;}
+.add-ex-input{flex:1;padding:10px 12px;border:0.5px solid var(--border2);border-radius:var(--rs);font-size:15px;background:var(--bg2);color:var(--text);font-family:inherit;outline:none;}
+.add-ex-input:focus{border-color:var(--green);}
+.btn{padding:10px 14px;border:0.5px solid var(--border2);border-radius:var(--rs);background:transparent;font-size:14px;cursor:pointer;color:var(--text);font-family:inherit;}
+.btn:active{opacity:0.7;}
+
+.btn-log{width:100%;padding:15px;background:var(--text);color:var(--bg);border:none;border-radius:var(--rs);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;letter-spacing:-0.2px;transition:background 0.2s;}
+.btn-log:active{opacity:0.8;}
+
+/* recent sessions — simple list */
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.hist-item:last-child{border-bottom:none;}
+.hist-date{font-size:14px;color:#ffffff;}
+.hist-type{font-size:13px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.hist-type.upper{color:var(--purple);background:rgba(83,74,183,0.1);}
+.hist-type.lower{color:var(--green);background:rgba(29,158,117,0.1);}
+
+.sec-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin:20px 0 8px;}
+.muted{color:var(--text2);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <span class="header-title">gym</span>
+    <div class="sync-row">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-status">connecting...</span>
+    </div>
+  </div>
+
+  <div id="picker-ui">
+    <div class="picker">
+      <div class="picker-label">today's session</div>
+      <div class="picker-btns">
+        <button class="picker-btn upper" onclick="chooseSession('upper')">upper</button>
+        <button class="picker-btn lower" onclick="chooseSession('lower')">lower</button>
+      </div>
+    </div>
+    <div class="sec-label">recent sessions</div>
+    <div class="card" id="gym-history-picker"><span class="muted">loading...</span></div>
+  </div>
+
+  <div id="session-ui" style="display:none;">
+    <div id="session-banner" class="session-banner"></div>
+    <div class="card" id="exercise-list"></div>
+    <div class="add-ex-row">
+      <input type="text" id="new-ex" class="add-ex-input" placeholder="add exercise..."/>
+      <button class="btn" onclick="addExercise()">add</button>
+    </div>
+    <button class="btn-log" id="log-btn" onclick="logSession()">log session</button>
+
+    <div class="sec-label">recent sessions</div>
+    <div class="card" id="gym-history-session"><span class="muted">loading...</span></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://fgjfxrrnsrvubpasxmjp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnamZ4cnJuc3J2dWJwYXN4bWpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NTM5MDgsImV4cCI6MjA5MTEyOTkwOH0.1UIEx10H8lspMIuuHxRIW3S6zT5c4H4EuDrgFYArTzA';
+const H={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+
+const UPPER_EX=['incline db press','lat pulldown','shoulder press','upper back row','jm press','incline db curl','lateral raise','tricep pushdown','hammer curl','crunch'];
+const LOWER_EX=['squat','rdl','leg extension','leg curl','crunch'];
+const LOWER_MARKERS=['squat','rdl','leg extension','leg curl'];
+
+let exercises=[], gymSessions=[], gymSets={}, sessionChoice=null;
+
+function today(){return new Date().toISOString().split('T')[0];}
+
+function setSync(s){
+  const c={ok:'#1D9E75',syncing:'#EF9F27',error:'#E24B4A'};
+  document.getElementById('sync-dot').style.background=c[s];
+  document.getElementById('sync-status').textContent=s==='ok'?'synced':s==='syncing'?'syncing...':'error';
+}
+
+async function sb(path,opts={}){
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/'+path,{headers:H,...opts});
+    if(!r.ok){console.error('SB',r.status,await r.text());return null;}
+    const ct=r.headers.get('content-type')||'';
+    if(r.status===204||!ct.includes('json'))return[];
+    return await r.json();
+  }catch(e){console.error(e);return null;}
+}
+
+function inferSessionType(session){
+  // if stored explicitly use it
+  if(session.session_type)return session.session_type;
+  // infer from exercises
+  const exKeys=Object.keys(session.exercises||{});
+  const isLower=exKeys.some(e=>LOWER_MARKERS.includes(e.toLowerCase()));
+  return isLower?'lower':'upper';
+}
+
+async function init(){
+  setSync('syncing');
+  const [ex,gs]=await Promise.all([
+    sb('gym_exercises?select=*&order=created_at'),
+    sb('gym_sessions?select=*&order=date.desc&limit=30'),
+  ]);
+  if(ex===null){setSync('error');return;}
+  exercises=(ex||[]).map(e=>e.name);
+  gymSessions=(gs||[]).reverse();
+  if(!exercises.length){
+    const allEx=[...new Set([...UPPER_EX,...LOWER_EX])];
+    const toInsert=allEx.map((n,i)=>({id:'ex_'+i,name:n}));
+    await sb('gym_exercises',{method:'POST',body:JSON.stringify(toInsert)});
+    exercises=allEx;
+  }
+  setSync('ok');
+  renderHistory('gym-history-picker');
+}
+
+function chooseSession(val){
+  sessionChoice=val;
+  document.getElementById('picker-ui').style.display='none';
+  document.getElementById('session-ui').style.display='block';
+  const banner=document.getElementById('session-banner');
+  banner.className='session-banner '+val;
+  banner.innerHTML=`<span class="sb-type">${val}</span><button class="sb-change" onclick="resetPicker()">change</button>`;
+  renderGym();
+  renderHistory('gym-history-session');
+}
+
+function resetPicker(){
+  sessionChoice=null;
+  gymSets={};
+  document.getElementById('picker-ui').style.display='block';
+  document.getElementById('session-ui').style.display='none';
+  renderHistory('gym-history-picker');
+}
+
+function getLastSession(ex){
+  const matches=gymSessions.filter(s=>s.exercises&&s.exercises[ex]);
+  if(!matches.length)return null;
+  const last=matches[matches.length-1];
+  const sets=last.exercises[ex];
+  const top=sets.reduce((a,b)=>parseFloat(b.kg)>parseFloat(a.kg)||(parseFloat(b.kg)===parseFloat(a.kg)&&parseInt(b.reps)>parseInt(a.reps))?b:a);
+  return{top,sets,date:last.date};
+}
+
+function getTopSetThisSession(ex){
+  const sets=(gymSets[ex]||[]).filter(s=>s.kg&&s.reps);
+  if(!sets.length)return null;
+  return sets.reduce((a,b)=>parseFloat(b.kg)>parseFloat(a.kg)||(parseFloat(b.kg)===parseFloat(a.kg)&&parseInt(b.reps)>parseInt(a.reps))?b:a);
+}
+
+function renderGym(){
+  const el=document.getElementById('exercise-list');
+  const choiceEx=sessionChoice==='upper'?UPPER_EX:LOWER_EX;
+  const displayEx=exercises.filter(e=>choiceEx.includes(e)).sort((a,b)=>choiceEx.indexOf(a)-choiceEx.indexOf(b));
+  const extras=exercises.filter(e=>!UPPER_EX.includes(e)&&!LOWER_EX.includes(e));
+  const allDisplay=[...displayEx,...extras];
+
+  if(!allDisplay.length){el.innerHTML='<span class="muted">no exercises</span>';return;}
+
+  el.innerHTML=allDisplay.map(ex=>{
+    if(!gymSets[ex]){
+      const prev=getLastSession(ex);
+      const count=prev?prev.sets.length:3;
+      gymSets[ex]=Array(count).fill(null).map(()=>({kg:'',reps:''}));
+    }
+    const last=getLastSession(ex);
+    const todayTop=getTopSetThisSession(ex);
+
+    let prBadge='';
+    if(last&&todayTop){
+      const beatKg=parseFloat(todayTop.kg)>parseFloat(last.top.kg);
+      const beatReps=parseFloat(todayTop.kg)===parseFloat(last.top.kg)&&parseInt(todayTop.reps)>parseInt(last.top.reps);
+      if(beatKg||beatReps)prBadge=`<span class="pr-badge">PR</span>`;
+    }
+
+    let lastLine='no previous data';
+    if(last){
+      const setsStr=last.sets.map(s=>`${s.kg}×${s.reps}`).join('  ');
+      lastLine=`<strong>${last.date.slice(5)}</strong> &nbsp;${setsStr}`;
+    }
+
+    const lastSets=last?last.sets:[];
+    const setsHtml=gymSets[ex].map((s,i)=>{
+      const prevKg=lastSets[i]?String(lastSets[i].kg):'';
+      const prevReps=lastSets[i]?String(lastSets[i].reps):'';
+      return`<div class="set-grid">
+        <input class="set-input" type="number" inputmode="decimal" placeholder="${prevKg||'—'}" value="${s.kg}" oninput="gymSets['${ex}'][${i}].kg=this.value;renderGym()"/>
+        <input class="set-input" type="number" inputmode="numeric" placeholder="${prevReps||'—'}" value="${s.reps}" oninput="gymSets['${ex}'][${i}].reps=this.value;renderGym()"/>
+        <button class="ghost-btn" onclick="removeSet('${ex}',${i})">✕</button>
+      </div>`;
+    }).join('');
+
+    return`<div class="exercise-row">
+      <div class="ex-header">
+        <span class="ex-name">${ex}${prBadge}</span>
+        <button class="ghost-btn" onclick="removeExercise('${ex}')">remove</button>
+      </div>
+      <div class="col-labels"><span class="col-lbl">kg</span><span class="col-lbl">reps</span><span></span></div>
+      ${setsHtml}
+      <button class="ghost-btn" onclick="addSet('${ex}')">+ set</button>
+    </div>`;
+  }).join('');
+}
+
+function addSet(ex){gymSets[ex].push({kg:'',reps:''});renderGym();}
+function removeSet(ex,i){gymSets[ex].splice(i,1);if(!gymSets[ex].length)gymSets[ex]=[{kg:'',reps:''}];renderGym();}
+
+async function removeExercise(ex){
+  exercises=exercises.filter(e=>e!==ex);
+  delete gymSets[ex];
+  await sb('gym_exercises?name=eq.'+encodeURIComponent(ex),{method:'DELETE',headers:{...H,'Prefer':''}});
+  renderGym();
+}
+
+async function addExercise(){
+  const name=document.getElementById('new-ex').value.trim().toLowerCase();
+  if(!name||exercises.includes(name))return;
+  setSync('syncing');
+  exercises.push(name);
+  gymSets[name]=[{kg:'',reps:''},{kg:'',reps:''},{kg:'',reps:''}];
+  document.getElementById('new-ex').value='';
+  await sb('gym_exercises',{method:'POST',body:JSON.stringify({id:'ex_'+Date.now(),name})});
+  setSync('ok');
+  renderGym();
+}
+
+async function logSession(){
+  const session={date:today(),session_type:sessionChoice,exercises:{}};
+  exercises.forEach(ex=>{
+    const sets=(gymSets[ex]||[]).filter(s=>s.kg&&s.reps);
+    if(sets.length)session.exercises[ex]=sets.map(s=>({kg:parseFloat(s.kg),reps:parseInt(s.reps)}));
+  });
+  if(!Object.keys(session.exercises).length){alert('add some sets first');return;}
+  setSync('syncing');
+  const res=await sb('gym_sessions',{method:'POST',body:JSON.stringify(session)});
+  if(res!==null){
+    gymSessions.push(session);
+    exercises.forEach(ex=>gymSets[ex]=[{kg:'',reps:''},{kg:'',reps:''},{kg:'',reps:''}]);
+    setSync('ok');
+    renderGym();
+    renderHistory('gym-history-session');
+    const btn=document.getElementById('log-btn');
+    btn.textContent='logged ✓';
+    btn.style.background='var(--green)';
+    setTimeout(()=>{btn.textContent='log session';btn.style.background='var(--text)';},2000);
+  } else {
+    setSync('error');
+  }
+}
+
+function renderHistory(targetId){
+  const el=document.getElementById(targetId);
+  if(!el)return;
+  const recent=gymSessions.slice(-8).reverse();
+  if(!recent.length){el.innerHTML='<span class="muted">no sessions yet</span>';return;}
+  el.innerHTML=recent.map(s=>{
+    const type=inferSessionType(s);
+    return`<div class="hist-item">
+      <span class="hist-date">${s.date}</span>
+      <span class="hist-type ${type}">${type}</span>
+    </div>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
